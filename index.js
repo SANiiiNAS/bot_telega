@@ -1,30 +1,62 @@
-const telegramBot = require("node-telegram-bot-api")
+const express = require('express')
+const mysql = require('mysql')
+const path = require('path')
+const expressApp = express()
+const port = 3000;
+expressApp.use(express.static('static'))
+expressApp.use(express.json());
 
+const connection = mysql.createConnection({
+	host: "localhost",
+	port: 3306,
+	user: "root",
+	database: "database",
+	password: ""
+});
 
-TOKEN = '5655149375:AAH0XldbeSCG__nDnynFVS9dlmhIAoO-cbI'
-const bot = new telegramBot(TOKEN, { polling: true })
-
-bot.on('message', async msg => {
-	const text = msg.text;
-	const chatId = msg.chat.id;
-
-	if (text === '/start') {
-		 await bot.sendSticker(chatId, 'https://tlgrm.ru/_/stickers/9a5/3d6/9a53d66b-53c8-3ccb-a3dd-75fa64c18322/20.webp')
-		 return bot.sendMessage(chatId, `Добро опожаловать в Телеграм бот Сергея Васильева `)
-
+connection.connect(err => {
+	if (err) {
+		console.log(err);
+		return err
+	} else {
+		console.log("data ---ok");
 	}
-	if (text === '/info') {
-		 return bot.sendMessage(chatId, `Привет ${msg.from.first_name} ${msg.from.last_name}`)
-	}
+});
 
-	if (text === '/game') {
-		 return startGame(chatId)
-	}
-	return bot.sendMessage(chatId, 'Попробуй еще раз)')
-})
+const { Telegraf } = require('telegraf')
 
 
+const token = '5533848555:AAEbph5sMmSbDSD8JxbU6gvtTBA8rbhyEQg'
+
+const bot = new Telegraf(token);
+
+const botstart = () => {
+
+
+	bot.launch()
+
+	bot.command('start', ctxs => {
+		console.log(ctxs.from)
+		bot.telegram.sendMessage(ctxs.chat.id, `Привет ${ctxs.from.first_name} ${ctxs.from.last_name}`)
+
+		var sql = ` INSERT INTO usersTest (name, last_name) VALUES ("${ctxs.from.first_name}", "${ctxs.from.last_name}")`;
+		connection.query(sql, function (err, result) {
+			if (err) throw err;
+			console.log("1 record inserted");
+		})
+
+	})
+
+
+}
+botstart()
 
 
 
 
+
+
+
+
+
+// let GET = 'https://api.trello.com/1/boards/zzfkMLbQ?key=559422330dd22fb9e88c5f7cb8c1f0bd&token=e1b9d4eda437d89cc54cead1a0ba9e4b3905e6564cbe753de5612a55e166ca1b'
